@@ -19,7 +19,7 @@ A ideia é **votar nas imagens** exibidas na tela usando os gestos de 👍 **lik
 ## 📂 Estrutura do projeto
 projeto/
 │
-├── index.html # Página principal com todo o código
+├── hand-like-dislike-detection.html # Página com o código
 ├── imagens/ # Pasta com as imagens para votação
 │ ├── 1.jpg
 │ ├── 2.jpg
@@ -29,7 +29,7 @@ projeto/
 
 ## ▶️ Como executar
 1. Clone este repositório:
-Abra o arquivo index.html no navegador.
+Abra o arquivo hand-like-dislike-detection.html no navegador.
 Permita o acesso à câmera.
 Faça os gestos de 👍 ou 👎 para votar nas imagens.
 
