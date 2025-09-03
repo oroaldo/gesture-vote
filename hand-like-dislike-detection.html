@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Detector de Like/Dislike com Gestos</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background-color: #f0f0f0;
+    }
+
+    video,
+    canvas {
+      display: block;
+    }
+
+    video {
+      display: block;
+      margin: 20px auto;
+      border-radius: 10px;
+      max-width: 400px;
+    }
+
+    img {
+      max-width: 400px;
+      margin-top: 20px;
+      border-radius: 10px;
+    }
+
+    #resultado {
+      font-size: 24px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Você gostou da imagem?</h1>
+  <p>👍 Like (indicador para cima) — 👎 Dislike (indicador para baixo)</p>
+
+  <video id="input_video" autoplay playsinline></video>
+  <img id="imagem" src="imagens/1.jpg" alt="Imagem atual">
+  <div id="resultado"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+
+  <script>
+
+    const videoElement = document.getElementById('input_video');
+    const imagemElement = document.getElementById('imagem');
+    const resultadoElement = document.getElementById('resultado');
+
+    const imagens = [
+      'imagens/1.jpg',
+      'imagens/2.jpg',
+      'imagens/3.jpg',
+      'imagens/4.jpg',
+      'imagens/5.jpg'
+    ];
+
+    let indexAtual = 0;
+    let likes = 0;
+    let dislikes = 0;
+    let podeVotar = true;
+
+    const hands = new Hands({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+    });
+
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.7,
+      minTrackingConfidence: 0.7,
+    });
+
+    hands.onResults((results) => {
+      if (!podeVotar) return;
+
+      if (results.multiHandLandmarks.length > 0) {
+        const pontos = results.multiHandLandmarks[0];
+        const pontaIndicador = pontos[8];  // ponta do indicador
+        const baseIndicador = pontos[6];  // base do indicador
+
+        const dy = pontaIndicador.y - baseIndicador.y;
+
+        if (dy < -0.1) {
+          registrarVoto('like');
+        } else if (dy > 0.1) {
+          registrarVoto('dislike');
+        }
+      }
+    });
+
+    function registrarVoto(tipo) {
+      podeVotar = false;
+      if (tipo === 'like') likes++;
+      if (tipo === 'dislike') dislikes++;
+
+      setTimeout(() => {
+        indexAtual++;
+        if (indexAtual < imagens.length) {
+          imagemElement.src = imagens[indexAtual];
+          podeVotar = true;
+        } else {
+          mostrarResultado();
+        }
+      }, 1000);
+    }
+
+    function mostrarResultado() {
+      imagemElement.style.display = 'none';
+      resultadoElement.innerHTML = `
+      <p>✅ Você terminou!</p>
+      <p>👍 Likes: <strong>${likes}</strong></p>
+      <p>👎 Dislikes: <strong>${dislikes}</strong></p>
+    `;
+    }
+
+    const camera = new Camera(videoElement, {
+      onFrame: async () => {
+        await hands.send({ image: videoElement });
+      },
+      width: 640,
+      height: 480,
+    });
+
+    camera.start();
+  </script>
+</body>
+
+</html>
+
+<!----
+
+projeto/
+│
+├── index.html         <- Página com tudo embutido (HTML/CSS/JS)
+├── imagens/           <- Pasta com 5 imagens para o exemplo
+│   ├── 1.jpg
+│   ├── 2.jpg
+│   ├── 3.jpg
+│   ├── 4.jpg
+│   └── 5.jpg
+
+
+---->
